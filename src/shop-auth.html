@@ -1,0 +1,129 @@
+<link rel="import" href="../bower_components/polymerfire/firebase-app.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../bower_components/signin-button/signin-button.html">
+<link rel="import" href="../bower_components/app-layout/app-grid/app-grid-style.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+
+<dom-module id="shop-auth">
+
+    <template>
+
+        <style include="app-grid-style">
+            :host {
+            --app-grid-columns: 1;
+            --app-grid-item-height: 100px;
+            }
+
+            ul {
+            padding: 0;
+            list-style: none;
+            }
+
+            .item {
+            background-color: white;
+            }
+
+            .container {
+                @apply(--layout-horizontal);
+                max-width: 450px;
+                margin: 0 auto;
+            }
+
+            #auth-form{
+                width: 100%;
+                margin-bottom: 2em;
+                display: block;
+            }
+
+            
+        </style>
+
+        <ul class="app-grid">
+
+            <li class="item">
+
+                <div class="container">
+                    <h1>Login</h1>
+                </div>
+
+                <div class="container">
+
+                    <form is="iron-form"
+                        id="auth-form" method="post" 
+                        action="javascript:void(0)">
+
+                        <paper-input type="email" label="Email"></paper-input>
+
+                        <paper-input type="password" label="Password"></paper-input>
+
+                        <p>
+                            <paper-button raised class="indigo">Login</paper-button>
+                        </p>
+                    </form>
+
+                </div>
+
+                <div class="container">
+                    <signin-button on-tap="login" provider="google"></signin-button>
+                </div>
+            </li>
+        </ul>
+
+        <firebase-app 
+            auth-domain="sprintshiplocal-1cf33.firebaseapp.com"
+            database-url="https://sprintshiplocal-1cf33.firebaseio.com"
+            api-key="AIzaSyB4AYWwj5lfxb5ZwU0BWdy4OrL9ePDc4yc">
+        </firebase-app>
+
+        <firebase-auth id="auth" user="{{user}}" provider="google" on-error="handleError">
+        </firebase-auth>
+
+    </template>
+
+    <script>
+        Polymer({
+            is: 'shop-auth',
+
+            properties: {
+                user: {
+                    type: Object
+                },
+                statusKnown: {
+                    type: Object
+                }
+            },
+
+            login: function(){
+
+                var auth = this.$.auth
+                    
+                    .signInWithPopup()
+
+                    .catch(function(error){
+
+                         // Handle Errors here.
+                        var errorCode = error.code;
+
+                        var errorMessage = error.message;
+
+                        // The email of the user's account used.
+                        var email = error.email;
+
+                        // The firebase.auth.AuthCredential type that was used.
+                        var credential = error.credential;
+
+                        console.log(errorMessage);
+                    });
+
+                return auth;
+            },
+
+            logout: function(){
+
+                return this.$.auth.signOut();
+            },
+        });
+    </script>
+
+</dom-module>

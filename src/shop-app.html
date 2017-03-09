@@ -225,11 +225,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         font-size: .9em;
         margin: 0 1em;
         cursor: pointer;
+        text-decoration: none;
+        color: #333;
       }
 
     </style>
-
-    <shop-analytics key="UA-39334307-16"></shop-analytics>
+    
     <!--
       app-location and app-route elements provide the state of the URL for the app.
     -->
@@ -272,10 +273,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           </a>
         </div>
 
-        <div class="logo" main-title><a href="/" aria-label="SHOP Home">SprintShip Local</a></div>
+        <div class="logo" main-title><a href="/" aria-label="SprintShip Local Home">SprintShip Local</a></div>
        
         <div class="auth-links" hidden$="[[!_shouldShowTabs]]">
-          <a><small>Login</small></a>
+
+          <a href="/auth" hidden="[[!user]]"><small>Login</small></a>
+
+          <a href="javascript:void(0)" on-tap="logout" hidden="[[user]]"><small>Logout</small></a>
         </div>
 
         <div class="cart-btn-container">
@@ -309,7 +313,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <app-drawer opened="{{drawerOpened}}" swipe-open tabindex="0">
         <iron-selector role="navigation" class="drawer-list" selected="[[categoryName]]" attr-for-selected="name">
 
-          <a>Login</a>
+          <a href="/auth" hidden="[[user]]">Login</a>
+          <a href="javascript:void(0)" on-tap="logout" hidden="[[!user]]">Logout</a>
 
           <template is="dom-repeat" items="[[categories]]" as="category" initial-count="4">
             <a name="[[category.name]]" href="/list/[[category.name]]">[[category.title]]</a>
@@ -332,6 +337,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <shop-checkout name="checkout" cart="[[cart]]" total="[[total]]" route="{{subroute}}"></shop-checkout>
 
       <shop-404-warning name="404"></shop-404-warning>
+
+      <!--Authentication view-->
+      <shop-auth name="auth"></shop-auth>
     </iron-pages>
 
     <footer>
@@ -353,6 +361,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       is: 'shop-app',
 
       properties: {
+
+        user: {
+            type: Object
+        },
+        statusKnown: {
+            type: Object
+        },
 
         page: {
           type: String,
@@ -500,7 +515,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         // Announce the page's title
         if (detail.title) {
-          document.title = detail.title + ' - SHOP';
+          document.title = detail.title + ' - SprintShip Local';
           this._announce(detail.title + ', loaded');
         }
       },
