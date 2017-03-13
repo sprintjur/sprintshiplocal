@@ -1,9 +1,12 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-app.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 <link rel="import" href="../bower_components/signin-button/signin-button.html">
 <link rel="import" href="../bower_components/app-layout/app-grid/app-grid-style.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="shop-auth-data.html">
 
 <dom-module id="shop-auth">
 
@@ -38,6 +41,11 @@
 
             
         </style>
+
+        <shop-auth-data 
+            id="authData"
+            user="{{user}}">
+        </shop-auth-data>
 
         <ul class="app-grid">
 
@@ -96,9 +104,22 @@
 
             login: function(){
 
+                var self = this;
+
                 var auth = this.$.auth
                     
                     .signInWithPopup()
+
+                    .then(function(result){
+
+                        // This gives you a Google Access Token. You can use it to access the Google API.
+                        var token = result.credential.accessToken;
+
+                        // The signed-in user info.
+                        var user = result.user;
+                        
+                        self.$.authData.setUser(user);
+                    })
 
                     .catch(function(error){
 
@@ -113,7 +134,7 @@
                         // The firebase.auth.AuthCredential type that was used.
                         var credential = error.credential;
 
-                        console.log(errorMessage);
+                        // console.log(errorMessage);
                     });
 
                 return auth;

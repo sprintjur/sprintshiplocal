@@ -1,0 +1,36 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/app-storage/app-localstorage/app-localstorage-document.html">
+
+<dom-module id="shop-auth-data">
+
+    <template>
+        <app-localstorage-document key="shop-auth-data" data="{{user}}"></app-localstorage-document>
+    </template>
+
+    <script>
+        Polymer({
+
+            is: 'shop-auth-data',
+
+            properties: {
+                user: {
+                    type: Object
+                }
+            },
+
+            setUser: function(user){
+
+                this.user = user;
+
+                console.log("user has been set.");
+            },
+
+            getUser: function(){
+
+                console.log(this.user);
+                
+                return this.user;
+            }
+        });
+    </script>
+</dom-module>

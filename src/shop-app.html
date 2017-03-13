@@ -18,7 +18,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/iron-media-query/iron-media-query.html">
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="../bower_components/iron-selector/iron-selector.html">
-
+<link rel="import" href="shop-auth-data.html">
 <link rel="import" href="shop-category-data.html">
 <!-- Since 'home' is the default route, eagerly load it. -->
 <link rel="import" href="shop-home.html">
@@ -257,6 +257,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         cart="{{cart}}"
         num-items="{{numItems}}"
         total="{{total}}"></shop-cart-data>
+      
+    <shop-auth-data id="authData" user="{{user}}"></shop-auth-data>
 
     <app-header role="navigation" id="header" effects="waterfall" condenses reveals>
       <app-toolbar>
@@ -363,8 +365,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       properties: {
 
         user: {
-            type: Object
+            type: Object,
         },
+        
         statusKnown: {
             type: Object
         },
@@ -419,6 +422,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this.listen(window, 'online', '_notifyNetworkStatus');
           this.listen(window, 'offline', '_notifyNetworkStatus');
         });
+        
+        console.log(this.$.authData.getUser());
       },
 
       _routePageChanged: function(page) {
