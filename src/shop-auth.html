@@ -1,8 +1,13 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/signin-button/signin-button.html">
 <link rel="import" href="../bower_components/app-layout/app-grid/app-grid-style.html">
+
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
-<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-input/paper-input-error.html">
+<link rel="import" href="../bower_components/paper-input/paper-input-container.html">
+
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-app.html">
 <link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
@@ -39,6 +44,21 @@
                 display: block;
             }
 
+            paper-input-container{
+                margin-bottom: 1em;
+            }
+            paper-button{
+                margin: 2em 0 1em 0;
+            }
+
+            paper-button.indigo {
+                background-color: var(--paper-indigo-500);
+                color: white;
+                --paper-button-raised-keyboard-focus: {
+                background-color: var(--paper-pink-a200) !important;
+                color: white !important;
+                };
+            }
             
         </style>
 
@@ -57,19 +77,28 @@
                         id="auth-form" method="post" 
                         action="javascript:void(0)">
 
-                        <paper-input type="email" label="Email"></paper-input>
+                        <paper-input-container always-float-label auto-validate attr-for-value="value">
+                            <label>Email</label>
+                            <input is="iron-input" type="email" id="email" required>
+                            <paper-input-error>The email field is required and must be valid.</paper-input-error>
+                        </paper-input-container>
 
-                        <paper-input type="password" label="Password"></paper-input>
+                        <paper-input-container always-float-label auto-validate attr-for-value="value">
+                            <label>Password</label>
+                            <input is="iron-input" id="password" type="password" required></input>
+                            <paper-input-error>The password field is required.</paper-input-error>
+                        </paper-input-container>
 
                         <p>
-                            <paper-button raised class="indigo">Login</paper-button>
+                            <paper-button raised class="indigo" on-tap="login">Login</paper-button> &nbsp;
+                            <paper-button raised on-tap="createAccount">Create Account</paper-button>
                         </p>
                     </form>
 
                 </div>
 
                 <div class="container">
-                    <signin-button on-tap="login" provider="google"></signin-button>
+                    <signin-button on-tap="loginWithGoogle" provider="google"></signin-button>
                 </div>
             </li>
         </ul>
@@ -82,10 +111,18 @@
         </firebase-app>
     
         <firebase-auth 
-            id="firebaseAuth" 
+            id="firebaseOAuth" 
             user="{{user}}" 
             provider="google" on-error="handleError">
         </firebase-auth>
+
+        <paper-dialog id="alertModal" modal>
+            <h4>Authentication Error</h4>
+            <p id="authAlert"></p>
+            <div class="buttons">
+                <paper-button dialog-confirm autofocus>OK</paper-button>
+            </div>
+        </paper-dialog>
 
 
     </template>
@@ -105,14 +142,57 @@
 
             getAuth: function(){
 
-                return this.$.firebaseAuth;
+                return this.$.firebaseOAuth;
+            },
+
+            createAccount: function(){
+
+                if(this.$.email.validate() && this.$.password.validate()){
+
+                   var self = this;
+
+                   const promise = this.$.firebaseOAuth.createUserWithEmailAndPassword(this.$.email.value, this.$.password.value);
+
+                   promise.then(function(user){
+
+                        self.route('home');
+                   });
+
+                   promise.catch(e=> {
+
+                        self.$.authAlert.innerHTML = e.message;
+
+                        self.$.alertModal.open();
+                   });
+               }
             },
 
             login: function(){
 
+               if(this.$.email.validate() && this.$.password.validate()){
+
+                   var self = this;
+
+                   const promise = this.$.firebaseOAuth.signInWithEmailAndPassword(this.$.email.value, this.$.password.value);
+
+                   promise.then(function(user){
+                        self.route('home');
+                   });
+
+                   promise.catch(e=> {
+
+                        self.$.authAlert.innerHTML = e.message;
+
+                        self.$.alertModal.open();
+                   });
+               }
+            },
+
+            loginWithGoogle: function(){
+
                 var self = this;
 
-                var auth = this.$.firebaseAuth
+                var auth = this.$.firebaseOAuth
                     
                     .signInWithPopup()
 
@@ -143,7 +223,7 @@
 
             logout: function(){
 
-                this.$.firebaseAuth.signOut();
+                this.$.firebaseOAuth.signOut();
 
                 this.route('auth');
             },

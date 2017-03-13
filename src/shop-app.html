@@ -313,7 +313,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             <small>Login</small>
           </a>
 
-          <div class="profile-pic" hidden="[[!user]]">
+          <div class="profile-pic" hidden="[[!user.photoURL]]">
               <img src="{{user.photoURL}}">
           </div>
 
@@ -359,7 +359,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
           <div id="mobile-auth-links">
             <div class="user-welcome" hidden="[[!user]]">
-                <div>
+                <div hidden="[[!user.photoURL]]">
                   <img src="{{user.photoURL}}">
                 </div>
                 <div>Welcome {{user.displayName}}</div>
@@ -393,6 +393,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       <!--Authentication view-->
       <shop-auth name="auth" id="auth"></shop-auth>
+
+      <!--Create account view-->
+      <!--<shop-register name="register" id="register"></shop-register>-->
     </iron-pages>
 
     <footer>
