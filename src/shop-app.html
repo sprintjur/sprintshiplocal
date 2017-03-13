@@ -18,10 +18,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../bower_components/iron-media-query/iron-media-query.html">
 <link rel="import" href="../bower_components/iron-pages/iron-pages.html">
 <link rel="import" href="../bower_components/iron-selector/iron-selector.html">
-<link rel="import" href="shop-auth-data.html">
+
+
+
 <link rel="import" href="shop-category-data.html">
 <!-- Since 'home' is the default route, eagerly load it. -->
 <link rel="import" href="shop-home.html">
+<link rel="import" href="shop-auth.html">
 
 <dom-module id="shop-app">
 
@@ -221,16 +224,43 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
       }
 
+      .auth-links{
+        position: absolute;
+        right: 2.5em;
+      }
+      .auth-links .profile-pic img{
+        width: 30px;
+        border-radius: 15px;
+      }
+      .auth-links .profile-pic{
+        float: left;
+      }
       .auth-links a{
         font-size: .9em;
-        margin: 0 1em;
+        margin: 0 1em 0 .5em;
         cursor: pointer;
         text-decoration: none;
         color: #333;
       }
 
+
+      #mobile-auth-links{
+        margin: 1em;
+        border-bottom: 1px solid #e9e9e9;
+      }
+
+      #mobile-auth-links img{
+        border-radius: 30px;
+        width: 60px;
+      }
+
+      #mobile-auth-links a{padding: 0}
+
+      .hide{
+        display: none;
+      }
     </style>
-    
+        
     <!--
       app-location and app-route elements provide the state of the URL for the app.
     -->
@@ -258,12 +288,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         num-items="{{numItems}}"
         total="{{total}}"></shop-cart-data>
       
-    <shop-auth-data id="authData" user="{{user}}"></shop-auth-data>
 
     <app-header role="navigation" id="header" effects="waterfall" condenses reveals>
       <app-toolbar>
 
         <div class="left-bar-item">
+
           <paper-icon-button
               class="menu-btn"
               icon="menu"
@@ -278,11 +308,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <div class="logo" main-title><a href="/" aria-label="SprintShip Local Home">SprintShip Local</a></div>
        
         <div class="auth-links" hidden$="[[!_shouldShowTabs]]">
+          
+          <a href="/auth" class="hide loginlink"  hidden="[[user]]">
+            <small>Login</small>
+          </a>
 
-          <a href="/auth" hidden="[[!user]]"><small>Login</small></a>
+          <div class="profile-pic" hidden="[[!user]]">
+              <img src="{{user.photoURL}}">
+          </div>
 
-          <a href="javascript:void(0)" on-tap="logout" hidden="[[user]]"><small>Logout</small></a>
+          <a href="javascript:void(0)" on-tap="logout" hidden="[[!user]]">
+            <small>Logout</small>
+          </a>
+          
         </div>
+          
 
         <div class="cart-btn-container">
           <a href="/cart" tabindex="-1">
@@ -315,8 +355,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <app-drawer opened="{{drawerOpened}}" swipe-open tabindex="0">
         <iron-selector role="navigation" class="drawer-list" selected="[[categoryName]]" attr-for-selected="name">
 
-          <a href="/auth" hidden="[[user]]">Login</a>
-          <a href="javascript:void(0)" on-tap="logout" hidden="[[!user]]">Logout</a>
+          <a href="/auth" class="loginlink hide" hidden="[[user]]">Login</a>
+
+          <div id="mobile-auth-links">
+            <div class="user-welcome" hidden="[[!user]]">
+                <div>
+                  <img src="{{user.photoURL}}">
+                </div>
+                <div>Welcome {{user.displayName}}</div>
+                <a href="javascript:void(0)" on-tap="logout">
+                  Logout
+                </a>
+            </div>
+          </div>
 
           <template is="dom-repeat" items="[[categories]]" as="category" initial-count="4">
             <a name="[[category.name]]" href="/list/[[category.name]]">[[category.title]]</a>
@@ -341,7 +392,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <shop-404-warning name="404"></shop-404-warning>
 
       <!--Authentication view-->
-      <shop-auth name="auth"></shop-auth>
+      <shop-auth name="auth" id="auth"></shop-auth>
     </iron-pages>
 
     <footer>
@@ -350,7 +401,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <!-- a11y announcer -->
     <div class="announcer" aria-live="assertive">[[_a11yLabel]]</div>
-
+        
   </template>
 
   <script>
@@ -422,8 +473,35 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this.listen(window, 'online', '_notifyNetworkStatus');
           this.listen(window, 'offline', '_notifyNetworkStatus');
         });
-        
-        console.log(this.$.authData.getUser());
+
+
+        // FirebaseAuth
+
+        var firebaseAuth = this.$.auth.getAuth();
+
+        self = this;
+
+        loginLinks = Polymer.dom(this.root).querySelector('.loginlink');
+
+        firebaseAuth.auth.onAuthStateChanged(function(user) {
+
+          if (user) {
+
+            self.user = user;
+
+            loginLinks.classList.add('hide');
+
+          } else {
+            self.user = null;
+
+            loginLinks.classList.remove('hide');
+          }
+        });
+      },
+
+      logout: function(){
+
+        this.$.auth.logout();
       },
 
       _routePageChanged: function(page) {

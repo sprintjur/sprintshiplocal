@@ -1,12 +1,11 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/polymerfire/firebase-app.html">
-<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 <link rel="import" href="../bower_components/signin-button/signin-button.html">
 <link rel="import" href="../bower_components/app-layout/app-grid/app-grid-style.html">
 <link rel="import" href="../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../bower_components/paper-button/paper-button.html">
-<link rel="import" href="shop-auth-data.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-app.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
 
 <dom-module id="shop-auth">
 
@@ -31,6 +30,7 @@
                 @apply(--layout-horizontal);
                 max-width: 450px;
                 margin: 0 auto;
+                padding: 0 2em;
             }
 
             #auth-form{
@@ -42,10 +42,6 @@
             
         </style>
 
-        <shop-auth-data 
-            id="authData"
-            user="{{user}}">
-        </shop-auth-data>
 
         <ul class="app-grid">
 
@@ -79,13 +75,18 @@
         </ul>
 
         <firebase-app 
+            id="firebaseApp"
             auth-domain="sprintshiplocal-1cf33.firebaseapp.com"
             database-url="https://sprintshiplocal-1cf33.firebaseio.com"
             api-key="AIzaSyB4AYWwj5lfxb5ZwU0BWdy4OrL9ePDc4yc">
         </firebase-app>
-
-        <firebase-auth id="auth" user="{{user}}" provider="google" on-error="handleError">
+    
+        <firebase-auth 
+            id="firebaseAuth" 
+            user="{{user}}" 
+            provider="google" on-error="handleError">
         </firebase-auth>
+
 
     </template>
 
@@ -102,23 +103,22 @@
                 }
             },
 
+            getAuth: function(){
+
+                return this.$.firebaseAuth;
+            },
+
             login: function(){
 
                 var self = this;
 
-                var auth = this.$.auth
+                var auth = this.$.firebaseAuth
                     
                     .signInWithPopup()
 
                     .then(function(result){
 
-                        // This gives you a Google Access Token. You can use it to access the Google API.
-                        var token = result.credential.accessToken;
-
-                        // The signed-in user info.
-                        var user = result.user;
-                        
-                        self.$.authData.setUser(user);
+                       self.route('home');
                     })
 
                     .catch(function(error){
@@ -134,6 +134,7 @@
                         // The firebase.auth.AuthCredential type that was used.
                         var credential = error.credential;
 
+                        // TODO: Show login error.
                         // console.log(errorMessage);
                     });
 
@@ -142,8 +143,17 @@
 
             logout: function(){
 
-                return this.$.auth.signOut();
+                this.$.firebaseAuth.signOut();
+
+                this.route('auth');
             },
+
+            route: function(path){
+
+                window.history.pushState({}, null, '/' + path);
+
+                window.dispatchEvent(new CustomEvent('location-changed'));
+            }
         });
     </script>
 
